@@ -1,4 +1,3 @@
-// src/components/IDCard.tsx
 "use client";
 
 import { forwardRef } from "react";
@@ -10,14 +9,14 @@ interface IDCardProps {
 }
 
 const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
-  // Derived fields from role (matches test_1 behavior)
-  const roleCode = (userData.role || "PCA").toUpperCase();
-  const staffType = getStaffType(userData.role || "");
+  // --- Derived display values (placeholders when empty) ---
+  const nameText = userData.name?.trim() ? userData.name : "EMPLOYEE NAME";
+  const roleText = userData.role ? userData.role.toUpperCase() : "ROLE";
+  const staffTypeText = userData.role ? getStaffType(userData.role) : "STAFF TYPE";
 
   return (
     <div
       ref={ref}
-      // Match test_1 sizing while keeping your clean UI
       className="relative w-[350px] h-[550px] bg-white rounded-xl shadow-2xl overflow-hidden border"
       style={{
         borderColor: "#e5e7eb",
@@ -26,15 +25,50 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Decorative corner accents (subtle, like test_1) */}
+      {/* Decorative: side lines */}
+      <div
+        className="absolute left-2 top-0 w-[3px] h-full rounded-full pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(139,92,246,0.35), rgba(59,130,246,0.2), rgba(34,197,94,0.35))",
+        }}
+      />
+      <div
+        className="absolute right-2 top-0 w-[3px] h-full rounded-full pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(34,197,94,0.35), rgba(59,130,246,0.2), rgba(139,92,246,0.35))",
+        }}
+      />
+
+      {/* Decorative: soft top bubbles */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute -top-8 -left-10 w-32 h-32 rounded-full"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(139,92,246,0.25), rgba(139,92,246,0))",
+            filter: "blur(1px)",
+          }}
+        />
+        <div
+          className="absolute -top-12 -right-6 w-44 h-44 rounded-full"
+          style={{
+            background:
+              "radial-gradient(closest-side, rgba(34,197,94,0.18), rgba(34,197,94,0))",
+            filter: "blur(1px)",
+          }}
+        />
+      </div>
+
+      {/* Bottom decorative corner bars (kept from previous version) */}
       <div className="absolute left-0 bottom-0 w-24 h-3 bg-purple-900/90 rounded-tr-xl" />
       <div className="absolute right-0 bottom-0 w-24 h-3 bg-purple-600/90 rounded-tl-xl" />
 
-      {/* Canvas padding */}
-      <div className="flex h-full flex-col items-center px-7 pt-6 pb-7">
-        {/* Logo (keep PNG) */}
-        <div className="w-full flex justify-center mb-1">
-          {/* Use <img> to avoid html2canvas/next-image CORS quirks */}
+      {/* Content */}
+      <div className="relative z-10 flex h-full flex-col items-center px-7 pt-8 pb-7">
+        {/* Logo (PNG kept) with extra breathing room below */}
+        <div className="w-full flex justify-center mb-4">
           <img
             src="/image.png"
             alt="Axzons HomeCare Logo"
@@ -45,19 +79,17 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         </div>
 
         {/* Photo frame */}
-        <div className="mt-3 mb-5 w-[118px] h-[118px] rounded-xl overflow-hidden border-2 shadow-md border-gray-200 bg-gray-100 grid place-items-center">
+        <div className="mt-1 mb-6 w-[128px] h-[128px] rounded-xl overflow-hidden border-2 shadow-md border-gray-200 bg-gray-100 grid place-items-center">
           {userData.photo ? (
             <Image
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
-              width={118}
-              height={118}
+              width={128}
+              height={128}
               className="w-full h-full object-cover"
             />
           ) : (
-            <span className="text-[12px] tracking-wide text-gray-500">
-              PHOTO
-            </span>
+            <span className="text-[12px] tracking-wide text-gray-500">PHOTO</span>
           )}
         </div>
 
@@ -66,29 +98,33 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           className="text-center font-extrabold tracking-wide uppercase"
           style={{ color: "#5b21b6", fontSize: 18, lineHeight: "22px" }}
         >
-          {userData.name ? userData.name : "EMPLOYEE NAME"}
+          {nameText}
         </div>
 
-        {/* Role (PCA/HHA/RN) */}
+        {/* Role */}
         <div
           className="mt-1 text-center font-extrabold uppercase"
-          style={{ color: "#5b21b6", fontSize: 16 }}
+          style={{ color: "#374151", fontSize: 16 }}
         >
-          {roleCode}
+          {roleText}
         </div>
 
-        {/* Staff Type (derived from role, like test_1) */}
+        {/* Staff Type */}
         <div
           className="mt-1 text-center font-semibold uppercase"
           style={{ color: "#6b7280", fontSize: 12 }}
         >
-          {staffType || "NON-MEDICAL STAFF"}
+          {staffTypeText}
         </div>
 
-        {/* Divider (green line) */}
+        {/* Divider */}
         <div
-          className="mt-5 mb-5 h-[2px] w-[92%] rounded"
-          style={{ backgroundColor: "#16a34a", opacity: 0.7 }}
+          className="mt-5 mb-5 h-[3px] w-[92%] rounded"
+          style={{
+            background:
+              "linear-gradient(90deg, #8b5cf6, #84cc16, #22c55e, #8b5cf6)",
+            opacity: 0.7,
+          }}
         />
 
         {/* Contact block */}
@@ -126,5 +162,4 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
 });
 
 IDCard.displayName = "IDCard";
-
 export default IDCard;
