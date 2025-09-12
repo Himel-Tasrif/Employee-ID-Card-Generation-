@@ -9,7 +9,7 @@ interface IDCardProps {
 }
 
 const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
-  // --- Derived display values (placeholders when empty) ---
+  // Display values with placeholders when empty
   const nameText = userData.name?.trim() ? userData.name : "EMPLOYEE NAME";
   const roleText = userData.role ? userData.role.toUpperCase() : "ROLE";
   const staffTypeText = userData.role ? getStaffType(userData.role) : "STAFF TYPE";
@@ -25,7 +25,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Decorative: side lines */}
+      {/* Decorative: soft vertical side lines */}
       <div
         className="absolute left-2 top-0 w-[3px] h-full rounded-full pointer-events-none"
         style={{
@@ -41,33 +41,17 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         }}
       />
 
-      {/* Decorative: soft top bubbles */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div
-          className="absolute -top-8 -left-10 w-32 h-32 rounded-full"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(139,92,246,0.25), rgba(139,92,246,0))",
-            filter: "blur(1px)",
-          }}
-        />
-        <div
-          className="absolute -top-12 -right-6 w-44 h-44 rounded-full"
-          style={{
-            background:
-              "radial-gradient(closest-side, rgba(34,197,94,0.18), rgba(34,197,94,0))",
-            filter: "blur(1px)",
-          }}
-        />
-      </div>
+      {/* Decorative corner bars — TOP (new) */}
+      <div className="absolute left-0 top-0 w-24 h-3 bg-purple-900/90 rounded-br-xl" />
+      <div className="absolute right-0 top-0 w-24 h-3 bg-purple-600/90 rounded-bl-xl" />
 
-      {/* Bottom decorative corner bars (kept from previous version) */}
+      {/* Decorative corner bars — BOTTOM (kept) */}
       <div className="absolute left-0 bottom-0 w-24 h-3 bg-purple-900/90 rounded-tr-xl" />
       <div className="absolute right-0 bottom-0 w-24 h-3 bg-purple-600/90 rounded-tl-xl" />
 
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col items-center px-7 pt-8 pb-7">
-        {/* Logo (PNG kept) with extra breathing room below */}
+        {/* Logo (PNG) with breathing room */}
         <div className="w-full flex justify-center mb-4">
           <img
             src="/image.png"
