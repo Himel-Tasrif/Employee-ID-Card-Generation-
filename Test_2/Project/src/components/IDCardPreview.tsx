@@ -15,6 +15,10 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
 
+  // ✅ all three inputs required
+  const isComplete =
+    Boolean(userData.name?.trim()) && Boolean(userData.photo) && Boolean(userData.role);
+
   const getCanvasFromCapture = async () => {
     if (!captureRef.current) return null;
     return await html2canvas(captureRef.current, {
@@ -27,6 +31,7 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
   };
 
   const handleDownload = async () => {
+    if (!isComplete) return; // guard
     setIsGenerating(true);
     try {
       const canvas = await getCanvasFromCapture();
@@ -38,14 +43,12 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [54, 86],
+        format: [54, 86], // CR80 portrait
       });
       const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = pdf.internal.pageSize.getHeight();
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-      pdf.save(
-        `${userData.name?.replace(/\s+/g, "_") || "ID_Card"}_ID_Card.pdf`
-      );
+      pdf.save(`${userData.name?.replace(/\s+/g, "_") || "ID_Card"}_ID_Card.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert("Error generating PDF. Please try again.");
@@ -55,6 +58,7 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
   };
 
   const handleDownloadImage = async () => {
+    if (!isComplete) return; // guard
     setIsGenerating(true);
     try {
       const canvas = await getCanvasFromCapture();
@@ -63,9 +67,7 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
         return;
       }
       const link = document.createElement("a");
-      link.download = `${
-        userData.name?.replace(/\s+/g, "_") || "ID_Card"
-      }_ID_Card.png`;
+      link.download = `${userData.name?.replace(/\s+/g, "_") || "ID_Card"}_ID_Card.png`;
       link.href = canvas.toDataURL();
       link.click();
     } catch (error) {
@@ -95,16 +97,23 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
       {/* Download Buttons */}
       <div className="space-y-3">
         <div className="text-center">
-          <p className="text-sm text-gray-600 mb-4">
-            Your ID card is ready! Download in your preferred format.
-          </p>
+          {isComplete ? (
+            <p className="text-sm text-gray-600 mb-4">
+              Your ID card is ready! Download in your preferred format.
+            </p>
+          ) : (
+            <p className="text-sm text-gray-500 mb-4">
+              Enter the employee name, upload a photo, and choose a role to enable downloads.
+            </p>
+          )}
         </div>
 
         <div className="flex space-x-3">
           <button
             onClick={handleDownloadImage}
-            disabled={isGenerating}
+            disabled={!isComplete || isGenerating}
             className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            title={!isComplete ? "Complete all fields to download" : ""}
           >
             <Download className="w-4 h-4" />
             <span>Download PNG</span>
@@ -112,8 +121,9 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
 
           <button
             onClick={handleDownload}
-            disabled={isGenerating}
+            disabled={!isComplete || isGenerating}
             className="flex-1 flex items-center justify-center space-x-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+            title={!isComplete ? "Complete all fields to download" : ""}
           >
             {isGenerating ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -127,9 +137,7 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
 
       {/* Card Specifications */}
       <div className="bg-gray-50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-gray-900 mb-2">
-          Card Specifications
-        </h3>
+        <h3 className="text-sm font-medium text-gray-900 mb-2">Card Specifications</h3>
         <div className="text-xs text-gray-600 space-y-1">
           <div>• Standard ID card size: 54mm × 86mm (portrait)</div>
           <div>• High resolution: 300 DPI</div>
