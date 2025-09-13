@@ -128,3 +128,6 @@ button:focus {
     width: 100%;
   }
 }
+
+/* existing imports… */
+@import 'cropperjs/dist/cropper.css';
