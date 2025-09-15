@@ -3,8 +3,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState } from "react";
 import Cropper from "cropperjs";
-import { autoCropToSquare, canvasToFile } from "@/lib/imageProcessing";
+import { removeBackgroundCanvas, canvasToFile } from "@/lib/imageProcessing";
 import { Upload, Check, X, RefreshCw, Download } from "lucide-react";
+
+/** Quick probe to check if a canvas is "mostly white" */
+function isCanvasMostlyWhite(canvas: HTMLCanvasElement, samples = 1000): boolean {
+  try {
+    const ctx = canvas.getContext("2d")!;
+    const { width: W, height: H } = canvas;
+    const data = ctx.getImageData(0, 0, W, H).data;
+    let whiteish = 0;
+    for (let i = 0; i < samples; i++) {
+      const x = ((Math.random() * W) | 0) * 4;
+      const y = ((Math.random() * H) | 0) * 4;
+      const p = (y * W + x) * 1;
+      const r = data[p], g = data[p + 1], b = data[p + 2];
+      if (r > 245 && g > 245 && b > 245) whiteish++;
+    }
+    return whiteish / samples > 0.95;
+  } catch {
+    return false;
+  }
+}
 
 type Props = {
   open: boolean;
@@ -17,89 +37,99 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
   const [file, setFile] = useState<File | null>(initialFile || null);
   const [processing, setProcessing] = useState(false);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
+  const [origURL, setOrigURL] = useState<string | null>(null);
 
   const imgRef = useRef<HTMLImageElement | null>(null);
-
-  // NOTE: cast to `any` to avoid TS friction from mismatched cropper typings
   const cropperRef = useRef<any>(null);
   const processedCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // reset on close
   useEffect(() => {
     if (!open) {
-      try {
-        cropperRef.current?.destroy?.(); // typed as any
-      } catch {}
+      try { cropperRef.current?.destroy?.(); } catch {}
       cropperRef.current = null;
       setPreviewURL(null);
       setFile(initialFile || null);
+      processedCanvasRef.current = null;
+
+      if (origURL) {
+        URL.revokeObjectURL(origURL);
+        setOrigURL(null);
+      }
     }
   }, [open, initialFile]);
 
+  // init cropper after <img> loads
+  useEffect(() => {
+    if (!previewURL || !imgRef.current) return;
+    const el = imgRef.current;
+
+    const init = () => {
+      try {
+        cropperRef.current?.destroy?.();
+        const options: any = {
+          viewMode: 1,
+          dragMode: "move",
+          aspectRatio: 1,
+          autoCrop: true,
+          autoCropArea: 1,
+          responsive: true,
+          background: false,
+        };
+        cropperRef.current = new (Cropper as any)(el, options);
+      } catch (err) {
+        console.error("Cropper init failed", err);
+      }
+    };
+
+    if (el.complete && el.naturalWidth > 0) init();
+    else {
+      const onLoad = () => { el.removeEventListener("load", onLoad); init(); };
+      el.addEventListener("load", onLoad);
+      return () => el.removeEventListener("load", onLoad);
+    }
+  }, [previewURL]);
+
   const handlePick = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (f) setFile(f);
+    const f = e.target.files?.[0] || null;
+    setFile(f);
+    if (origURL) URL.revokeObjectURL(origURL);
+    setOrigURL(f ? URL.createObjectURL(f) : null);
   };
 
+  // Auto Process = background removal only (no face detect, no auto-crop)
   const runAutoCrop = async () => {
     if (!file) return;
     setProcessing(true);
     try {
-      const canvas = await autoCropToSquare(file, { outSize: 1024 });
+      const canvas = await removeBackgroundCanvas(file);
+
+      if (!canvas || canvas.width < 8 || canvas.height < 8) {
+        alert("Could not decode this image. Try a different photo (JPG/JPEG/PNG).");
+        setProcessing(false);
+        return;
+      }
+
+      // Occasionally if segmentation fails, we might get an almost-white canvas;
+      // fall back so user can still crop manually.
+      if (isCanvasMostlyWhite(canvas)) {
+        console.warn("Processed canvas appears blank. Falling back to original for manual crop.");
+        processedCanvasRef.current = null;
+        setPreviewURL(origURL ?? URL.createObjectURL(file));
+        return;
+      }
+
       processedCanvasRef.current = canvas;
       setPreviewURL(canvas.toDataURL("image/png"));
-
-      // init cropper after img is in the DOM
-      setTimeout(() => {
-        if (!imgRef.current) return;
-        try {
-          // destroy previous instance if any
-          cropperRef.current?.destroy?.();
-
-          // options casted as any to avoid TS errors about option names
-          const options: any = {
-            viewMode: 1,
-            dragMode: "move",
-            aspectRatio: 1,
-            autoCrop: true,
-            autoCropArea: 1,
-            responsive: true,
-            background: false,
-          };
-
-          cropperRef.current = new (Cropper as any)(imgRef.current, options);
-        } catch (err) {
-          console.error("Cropper init failed", err);
-        }
-      }, 0);
     } catch (e) {
-      alert("Failed to process image. Please try a different photo.");
       console.error(e);
+      alert("Failed to process image. Please try a different photo.");
     } finally {
       setProcessing(false);
     }
   };
 
   const handleApply = async () => {
-    if (cropperRef.current && imgRef.current) {
-      // use cropper’s current view to build the final 1024x1024 canvas
-      const c: HTMLCanvasElement = cropperRef.current.getCroppedCanvas?.({
-        width: 1024,
-        height: 1024,
-        imageSmoothingEnabled: true,
-      }) as HTMLCanvasElement;
-
-      if (c) processedCanvasRef.current = c;
-    }
-
-    if (!processedCanvasRef.current) return;
-
-    const f = await canvasToFile(processedCanvasRef.current, "portrait.png");
-    onApply(f);
-    onClose();
-  };
-
-  const handleDownload = async () => {
     let c: HTMLCanvasElement | null = null;
 
     if (cropperRef.current && imgRef.current) {
@@ -111,7 +141,26 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
     } else if (processedCanvasRef.current) {
       c = processedCanvasRef.current;
     }
+    if (!c) return;
 
+    const f = await canvasToFile(c, "portrait.png");
+    onApply(f);
+    onClose();
+  };
+
+  const handleDownload = async () => {
+    if (!previewURL) return;
+    let c: HTMLCanvasElement | null = null;
+
+    if (cropperRef.current && imgRef.current) {
+      c = cropperRef.current.getCroppedCanvas?.({
+        width: 1024,
+        height: 1024,
+        imageSmoothingEnabled: true,
+      }) as HTMLCanvasElement;
+    } else if (processedCanvasRef.current) {
+      c = processedCanvasRef.current;
+    }
     if (!c) return;
 
     const a = document.createElement("a");
@@ -128,7 +177,7 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* modal */}
-      <div className="absolute inset-x-0 top-10 mx-auto w-full max-w-3xl bg-white rounded-2xl shadow-2xl p-6">
+      <div className="absolute inset-x-0 top-10 mx-auto w/full max-w-3xl bg-white rounded-2xl shadow-2xl p-6">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Process Photo</h3>
           <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
@@ -174,7 +223,12 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
         {/* preview/cropper */}
         {previewURL && (
           <div className="mt-6 grid place-items-center">
-            <img ref={imgRef} src={previewURL} alt="Processed preview" className="max-h-[420px] rounded-xl border" />
+            <img
+              ref={imgRef}
+              src={previewURL}
+              alt="Processed preview"
+              className="max-h-[420px] rounded-xl border"
+            />
           </div>
         )}
 
