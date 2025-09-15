@@ -23,6 +23,7 @@ def style():
 def script():
     return send_from_directory(HERE, "app.js", mimetype="text/javascript")
 
+
 # --- API: remove background ---
 @app.post("/remove")
 def remove_bg():
