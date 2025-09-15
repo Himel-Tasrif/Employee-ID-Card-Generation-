@@ -1,32 +1,48 @@
-// src/lib/human.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import Human from "@vladmandic/human";
 
 let humanInstance: any | null = null;
 
 const humanConfig: any = {
-  // use official CDN for models (no server needed)
   modelBasePath: "https://cdn.jsdelivr.net/npm/@vladmandic/human/models",
   debug: false,
-  // detectors we actually use
-  face: {
-    detector: { enabled: true, rotation: true, maxDetected: 1 },
-    mesh: { enabled: false },
-    attention: { enabled: false },
-  },
+
+  // We do NOT need face/mesh/etc. for this step:
+  face: { enabled: false },
   body: { enabled: false },
   hand: { enabled: false },
   gesture: { enabled: false },
   object: { enabled: false },
+
+  // >>> IMPORTANT: enable RVM segmentation
+  segmentation: {
+    enabled: true,
+    modelPath: "rvm.json",
+    ratio: 0.5,      // 0.5 is fast, 0.75~1.0 is higher quality
+    mode: "default",
+  },
+
+  filter: { enabled: true, return: true, autoBrightness: true },
 };
 
 export async function getHuman() {
-  if (!humanInstance) {
-    humanInstance = new Human(humanConfig);
-    await humanInstance.load();
-    await humanInstance.warmup(); // quick GPU warmup for snappy first run
+  if (humanInstance) return humanInstance;
+  if (typeof window === "undefined") throw new Error("Human must run in the browser");
+
+  let HumanCtor: any;
+  try {
+    ({ default: HumanCtor } = await import(
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/human.esm.js"
+    ));
+  } catch {
+    ({ default: HumanCtor } = await import(
+      "https://cdn.jsdelivr.net/npm/@vladmandic/human/dist/human.esm-nobundle.js"
+    ));
   }
+
+  const human = new HumanCtor(humanConfig);
+  await human.load();
+  await human.warmup();
+  humanInstance = human;
   return humanInstance;
 }
