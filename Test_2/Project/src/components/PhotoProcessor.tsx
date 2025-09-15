@@ -57,7 +57,7 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
         setOrigURL(null);
       }
     }
-  }, [open, initialFile]);
+  }, [open, initialFile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // init cropper after <img> loads
   useEffect(() => {
@@ -110,8 +110,6 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
         return;
       }
 
-      // Occasionally if segmentation fails, we might get an almost-white canvas;
-      // fall back so user can still crop manually.
       if (isCanvasMostlyWhite(canvas)) {
         console.warn("Processed canvas appears blank. Falling back to original for manual crop.");
         processedCanvasRef.current = null;
@@ -171,27 +169,43 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
 
   if (!open) return null;
 
+  // high-contrast disabled styles
+  const disabledBtn =
+    "bg-gray-100 text-gray-700 border border-gray-300 cursor-not-allowed";
+  const useBtn =
+    previewURL
+      ? "bg-green-600 text-white hover:bg-green-700"
+      : disabledBtn;
+  const downloadBtn =
+    previewURL
+      ? "bg-gray-900 text-white hover:bg-black"
+      : disabledBtn;
+
   return (
     <div className="fixed inset-0 z-[100]">
       {/* overlay */}
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
 
       {/* modal */}
-      <div className="absolute inset-x-0 top-10 mx-auto w/full max-w-3xl bg-white rounded-2xl shadow-2xl p-6">
+      <div className="absolute inset-x-0 top-10 mx-auto w-full max-w-3xl bg-white rounded-2xl shadow-2xl p-6 relative z-[101]">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Process Photo</h3>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100">
+          <h3 className="text-lg font-semibold text-gray-900">Process Photo</h3>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 text-gray-700"
+            title="Close"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* uploader */}
         {!file && (
-          <label className="mt-4 block border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+          <label className="mt-4 block border-2 border-dashed border-gray-500/70 rounded-xl p-10 text-center cursor-pointer bg-white hover:border-blue-600 hover:bg-blue-50/60 shadow-sm transition">
             <input type="file" accept="image/*" onChange={handlePick} className="hidden" />
-            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <div className="text-sm text-gray-600">Click to upload or drag & drop</div>
-            <div className="text-xs text-gray-500 mt-1">PNG, JPG up to 10MB</div>
+            <Upload className="w-9 h-9 text-gray-600 mx-auto mb-3" />
+            <div className="text-sm text-gray-800 font-medium">Click to upload or drag &amp; drop</div>
+            <div className="text-xs text-gray-700 mt-1">PNG, JPG up to 10MB</div>
           </label>
         )}
 
@@ -201,7 +215,7 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
             <button
               onClick={runAutoCrop}
               disabled={processing}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 flex items-center gap-2"
             >
               {processing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
               Auto Process
@@ -210,13 +224,15 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
             <button
               onClick={handleDownload}
               disabled={!previewURL}
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-black disabled:bg-gray-300 flex items-center gap-2"
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 ${downloadBtn}`}
             >
               <Download className="w-4 h-4" />
               Download Processed
             </button>
 
-            <div className="text-xs text-gray-500">Tip: After auto process, you can drag/zoom the image to adjust.</div>
+            <div className="text-xs text-gray-600">
+              Tip: After auto process, you can drag/zoom the image to adjust.
+            </div>
           </div>
         )}
 
@@ -234,16 +250,21 @@ export default function PhotoProcessor({ open, onClose, onApply, initialFile }: 
 
         {/* footer */}
         <div className="mt-6 flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-50">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg border border-gray-300 text-gray-800 hover:bg-gray-50"
+          >
             Cancel
           </button>
           <button
             onClick={handleApply}
             disabled={!previewURL}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-300 flex items-center gap-2"
+            className={`px-4 py-2 rounded-lg font-medium ${useBtn}`}
           >
-            <Check className="w-4 h-4" />
-            Use This Photo
+            <span className="inline-flex items-center gap-2">
+              <Check className="w-4 h-4" />
+              Use This Photo
+            </span>
           </button>
         </div>
       </div>
