@@ -1,3 +1,5 @@
+// Tasrif Nur Himel
+
 const fileInput = document.getElementById("file");
 const processBtn = document.getElementById("process");
 const origImg = document.getElementById("orig");
