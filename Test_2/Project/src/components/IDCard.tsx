@@ -1,7 +1,6 @@
 "use client";
 
 import { forwardRef } from "react";
-import Image from "next/image";
 import { UserData, getStaffType } from "@/types";
 
 interface IDCardProps {
@@ -9,7 +8,7 @@ interface IDCardProps {
 }
 
 const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
-  // Display values with placeholders when empty
+  // Safe placeholders
   const nameText = userData.name?.trim() ? userData.name : "EMPLOYEE NAME";
   const roleText = userData.role ? userData.role.toUpperCase() : "ROLE";
   const staffTypeText = userData.role ? getStaffType(userData.role) : "STAFF TYPE";
@@ -17,15 +16,16 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
   return (
     <div
       ref={ref}
-      className="relative w-[350px] h-[550px] bg-white rounded-xl shadow-2xl overflow-hidden border"
+      className="relative w-[350px] h-[550px] rounded-xl shadow-2xl overflow-hidden border"
       style={{
+        // use only capture-safe CSS (no Tailwind color funcs)
         borderColor: "#e5e7eb",
         fontFamily:
           "Montserrat, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Decorative: soft vertical side lines */}
+      {/* Soft vertical side lines (inline gradient) */}
       <div
         className="absolute left-2 top-0 w-[3px] h-full rounded-full pointer-events-none"
         style={{
@@ -41,26 +41,49 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         }}
       />
 
-      {/* Decorative corner bars — TOP (new) */}
+      {/* Decorative corner bars — TOP (inline colors) */}
       <div className="absolute top-0 left-0 w-16 h-16">
-        <div className="absolute top-0 left-0 w-10 h-1 bg-purple-700 rounded-r"></div>
-        <div className="absolute top-0 left-0 w-1 h-10 bg-purple-700 rounded-b"></div>
+        <div
+          className="absolute top-0 left-0 w-10 h-1 rounded-r"
+          style={{ backgroundColor: "#6d28d9" /* purple-700 */ }}
+        />
+        <div
+          className="absolute top-0 left-0 w-1 h-10 rounded-b"
+          style={{ backgroundColor: "#6d28d9" }}
+        />
       </div>
       <div className="absolute top-0 right-0 w-16 h-16">
-        <div className="absolute top-0 right-0 w-10 h-1 bg-purple-700 rounded-l"></div>
-        <div className="absolute top-0 right-0 w-1 h-10 bg-purple-700 rounded-b"></div>
+        <div
+          className="absolute top-0 right-0 w-10 h-1 rounded-l"
+          style={{ backgroundColor: "#6d28d9" }}
+        />
+        <div
+          className="absolute top-0 right-0 w-1 h-10 rounded-b"
+          style={{ backgroundColor: "#6d28d9" }}
+        />
       </div>
 
-      {/* Decorative corner bars — BOTTOM (kept) */}
-      <div className="absolute left-0 bottom-0 w-24 h-3 bg-purple-900/90 rounded-tr-xl" />
-      <div className="absolute right-0 bottom-0 w-24 h-3 bg-purple-600/90 rounded-tl-xl" />
+      {/* Decorative corner bars — BOTTOM (inline colors) */}
+      <div
+        className="absolute left-0 bottom-0 w-24 h-3 rounded-tr-xl"
+        style={{ backgroundColor: "rgba(88,28,135,0.9)" /* purple-900/90 */ }}
+      />
+      <div
+        className="absolute right-0 bottom-0 w-24 h-3 rounded-tl-xl"
+        style={{ backgroundColor: "rgba(147,51,234,0.9)" /* purple-600/90 */ }}
+      />
 
-      {/* Header stripe */}
-      <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-purple-700 to-purple-500"></div>
+      {/* Header stripe (inline gradient) */}
+      <div
+        className="absolute top-0 left-0 w-full h-4"
+        style={{
+          background: "linear-gradient(90deg, #6d28d9, #a855f7)", // purple-700 -> purple-500
+        }}
+      />
 
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col items-center px-7 pt-8 pb-7">
-        {/* Logo (PNG) with breathing room */}
+        {/* Logo (plain <img>) */}
         <div className="w-full flex justify-center mb-4">
           <img
             src="/image.png"
@@ -72,17 +95,23 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         </div>
 
         {/* Photo frame */}
-        <div className="mt-1 mb-6 w-[128px] h-[128px] rounded-xl overflow-hidden border-2 shadow-md border-gray-200 bg-gray-100 grid place-items-center">
+        <div
+          className="mt-1 mb-6 w-[128px] h-[128px] rounded-xl overflow-hidden border-2 shadow-md grid place-items-center"
+          style={{ borderColor: "#e5e7eb", backgroundColor: "#f3f4f6" }}
+        >
           {userData.photo ? (
-            <Image
+            <img
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
               width={128}
               height={128}
-              className="w-full h-full object-cover"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              crossOrigin="anonymous"
             />
           ) : (
-            <span className="text-[12px] tracking-wide text-gray-500">PHOTO</span>
+            <span className="text-[12px] tracking-wide" style={{ color: "#6b7280" }}>
+              PHOTO
+            </span>
           )}
         </div>
 
@@ -110,12 +139,11 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           {staffTypeText}
         </div>
 
-        {/* Divider */}
+        {/* Divider (inline gradient) */}
         <div
           className="mt-5 mb-5 h-[3px] w-[92%] rounded"
           style={{
-            background:
-              "linear-gradient(90deg, #8b5cf6, #84cc16, #22c55e, #8b5cf6)",
+            background: "linear-gradient(90deg, #8b5cf6, #84cc16, #22c55e, #8b5cf6)",
             opacity: 0.7,
           }}
         />
