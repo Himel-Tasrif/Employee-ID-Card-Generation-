@@ -1,9 +1,11 @@
 // src/components/UserForm.tsx
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Upload, User, Briefcase } from "lucide-react";
 import { UserData, getStaffType } from "@/types";
+import PhotoProcessor from "./PhotoProcessor";
+import RemoveBGModal from "./RemoveBgModal"; // 👈 NEW
 
 interface UserFormProps {
   userData: UserData;
@@ -12,7 +14,21 @@ interface UserFormProps {
 
 export default function UserForm({ userData, setUserData }: UserFormProps) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [processorOpen, setProcessorOpen] = useState(false);
+  const [removeBgOpen, setRemoveBgOpen] = useState(false); // 👈 NEW
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // keep preview in sync when userData.photo changes (e.g., after processing)
+  useEffect(() => {
+    if (userData.photo) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPhotoPreview(e.target?.result as string);
+      reader.readAsDataURL(userData.photo);
+    } else {
+      setPhotoPreview(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }, [userData.photo]);
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -83,8 +99,6 @@ export default function UserForm({ userData, setUserData }: UserFormProps) {
               <button
                 onClick={() => {
                   setUserData({ ...userData, photo: null });
-                  setPhotoPreview(null);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
               >
@@ -100,6 +114,34 @@ export default function UserForm({ userData, setUserData }: UserFormProps) {
             onChange={handlePhotoUpload}
             className="hidden"
           />
+
+          {/* Actions row */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs text-gray-500">
+              Use “Process Photo” for phone snapshots.
+            </div>
+
+            <div className="flex gap-2">
+              {/* Your existing JS-based processor */}
+              <button
+                type="button"
+                onClick={() => setProcessorOpen(true)}
+                className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700"
+              >
+                Process Photo
+              </button>
+
+              {/* NEW: open the Flask remover UI in a modal */}
+              <button
+                type="button"
+                onClick={() => setRemoveBgOpen(true)}
+                className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded-md hover:bg-black"
+                title="Open Python remover (Flask) in a modal"
+              >
+                Remove Background
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -130,6 +172,19 @@ export default function UserForm({ userData, setUserData }: UserFormProps) {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      <PhotoProcessor
+        open={processorOpen}
+        onClose={() => setProcessorOpen(false)}
+        initialFile={userData.photo || null}
+        onApply={(f) => setUserData({ ...userData, photo: f })}
+      />
+
+      <RemoveBGModal
+        open={removeBgOpen}
+        onClose={() => setRemoveBgOpen(false)}
+      />
     </div>
   );
 }
