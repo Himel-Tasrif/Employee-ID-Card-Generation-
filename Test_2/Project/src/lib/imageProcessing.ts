@@ -1,106 +1,80 @@
-// src/lib/imageProcessing.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { getHuman } from "./human";
 
-// convert a File -> HTMLImageElement
-export async function fileToImage(file: File): Promise<HTMLImageElement> {
-  const url = URL.createObjectURL(file);
-  await new Promise((r) => setTimeout(r, 0)); // let browser attach url
-  return new Promise((resolve, reject) => {
+/** Robustly load any image File into an <img> */
+async function fileToImage(file: File): Promise<HTMLImageElement> {
+  const dataUrl = await new Promise<string>((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error("FileReader failed"));
+    fr.onload = () => res(String(fr.result));
+    fr.readAsDataURL(file);
+  });
+
+  return await new Promise<HTMLImageElement>((res, rej) => {
     const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = url;
+    img.crossOrigin = "anonymous";
+    img.onload = () => res(img);
+    img.onerror = () => rej(new Error("Image decode failed"));
+    img.src = dataUrl;
   });
 }
 
-type AutoCropOptions = {
-  outSize?: number;    // final square size
-  faceScale?: number;  // how much around face to include
-  eyeLevel?: number;   // push crop up so eyes sit ~40% from top
-};
-
-// main function: auto-crop around the face & return a square canvas
-export async function autoCropToSquare(
-  src: HTMLImageElement | File,
-  options: AutoCropOptions = {}
-): Promise<HTMLCanvasElement> {
-  const { outSize = 1024, faceScale = 2.4, eyeLevel = 0.4 } = options;
-
-  const img = src instanceof File ? await fileToImage(src) : src;
-
-  const W = img.naturalWidth || img.width;
-  const H = img.naturalHeight || img.height;
-
-  // run face detection
-  const human = await getHuman();
-  const result = await human.detect(img);
-
-  // choose the largest detected face (if any)
-  let box = null as null | { x: number; y: number; width: number; height: number };
-  if (Array.isArray(result.face) && result.face.length > 0) {
-    box = result.face
-      .slice()
-      .sort((a: any, b: any) => b.box.width * b.box.height - a.box.width * a.box.height)[0].box;
-  }
-
-  // compute square crop rect
-  let cx = W / 2;
-  let cy = H / 2;
-  let size = Math.min(W, H);
-
-  if (box) {
-    const fw = box.width;
-    const fh = box.height;
-    size = Math.min(Math.max(fw, fh) * faceScale, Math.min(W, H));
-
-    // set center X to face center
-    cx = box.x + fw / 2;
-
-    // push crop up so eyes land around the top 40% of the square
-    const faceTop = box.y;
-    const faceBottom = box.y + fh;
-    const eyesY = faceTop + fh * 0.35; // approx eye line
-    const desiredEyesY = (H * (eyeLevel * size)) / size; // relative position
-    cy = eyesY + (size * eyeLevel - (eyesY - (faceTop + fh * 0.35)));
-    // fallback if that math went wild
-    if (!Number.isFinite(cy)) cy = box.y + fh * 0.55;
-  }
-
-  let left = Math.round(cx - size / 2);
-  let top = Math.round(cy - size / 2);
-
-  // clamp crop to image bounds
-  if (left < 0) left = 0;
-  if (top < 0) top = 0;
-  if (left + size > W) left = Math.max(0, W - size);
-  if (top + size > H) top = Math.max(0, H - size);
-
-  // draw crop
-  const crop = document.createElement("canvas");
-  crop.width = size;
-  crop.height = size;
-  const g1 = crop.getContext("2d")!;
-  g1.imageSmoothingQuality = "high";
-  g1.drawImage(img, left, top, size, size, 0, 0, size, size);
-
-  // resize to outSize on a clean white background (fits your ID frame)
-  const out = document.createElement("canvas");
-  out.width = outSize;
-  out.height = outSize;
-  const g2 = out.getContext("2d")!;
-  g2.fillStyle = "#ffffff";
-  g2.fillRect(0, 0, outSize, outSize);
-  g2.imageSmoothingQuality = "high";
-  g2.drawImage(crop, 0, 0, outSize, outSize);
-
-  return out;
+/** Draw <img> on a canvas (optionally downscale huge sources) */
+function imageToCanvas(img: HTMLImageElement, maxSide = 2200): HTMLCanvasElement {
+  const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+  const W = Math.max(1, Math.round(img.naturalWidth * scale));
+  const H = Math.max(1, Math.round(img.naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, W, H);
+  return canvas;
 }
 
-// convenience: canvas -> File (PNG)
-export async function canvasToFile(canvas: HTMLCanvasElement, name = "portrait.png") {
-  return new Promise<File>((resolve) =>
-    canvas.toBlob((blob) => resolve(new File([blob!], name, { type: "image/png" })), "image/png", 1)
-  );
+/** Create a white background canvas of the same size */
+function makeWhiteBg(width: number, height: number): HTMLCanvasElement {
+  const bg = document.createElement("canvas");
+  bg.width = width;
+  bg.height = height;
+  const g = bg.getContext("2d")!;
+  g.fillStyle = "#fff";
+  g.fillRect(0, 0, width, height);
+  return bg;
+}
+
+/** canvas -> File (PNG) */
+export async function canvasToFile(canvas: HTMLCanvasElement, name = "portrait.png"): Promise<File> {
+  return await new Promise<File>((resolve) => {
+    canvas.toBlob((blob) => resolve(new File([blob!], name, { type: "image/png" })), "image/png");
+  });
+}
+
+/**
+ * Remove background using Human's RVM segmentation, composited over white.
+ * No face detection, no auto-cropping. We return a processed canvas
+ * with the **same aspect** as the source so your Cropper can do the rest.
+ */
+export async function removeBackgroundCanvas(file: File): Promise<HTMLCanvasElement> {
+  const img = await fileToImage(file);
+  const src = imageToCanvas(img, 2200);
+
+  // If Human fails for any reason, we fall back to original.
+  try {
+    const human = await getHuman();
+
+    // Prepare white background canvas
+    const whiteBg = makeWhiteBg(src.width, src.height);
+
+    // Human’s simple segmentation API: input + replacement background → canvas
+    // (If the API isn’t available in the current version, we catch and fallback.)
+    const seg = (await (human as any).segmentation?.(src, whiteBg)) as HTMLCanvasElement | undefined;
+    if (seg && seg.width && seg.height) return seg;
+  } catch (err) {
+    console.warn("Segmentation failed; using original image.", err);
+  }
+
+  return src;
 }
