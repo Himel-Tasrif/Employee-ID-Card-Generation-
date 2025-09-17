@@ -78,15 +78,15 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
 
         {/* Larger photo frame (160×160) */}
         <div
-          className="mt-1 mb-6 w-[150px] h-[170px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
+          className="mt-1 mb-6 w-[300px] h-[200px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
           style={{ borderColor: "#e5e7eb", backgroundColor: "#f3f4f6" }}
         >
           {userData.photo ? (
             <img
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
-              width={160}
-              height={180}
+              width={180}
+              height={200}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
