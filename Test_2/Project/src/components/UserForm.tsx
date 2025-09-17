@@ -161,6 +161,7 @@ export default function UserForm({ userData, setUserData }: UserFormProps) {
           <option value="HHA">HHA - Home Health Aide</option>
           <option value="Office Coordinator">Office Coordinator</option>
           <option value="RN">RN - Registered Nurse</option>
+          <option value="Field RN">Field RN - Registered Nurse</option>
           <option value="DPS">DPS - Director of Patient Services</option>
           <option value="Therapist - PT">Therapist - PT (Physical Therapist)</option>
           <option value="Therapist - OT">Therapist - OT (Occupational Therapist)</option>
