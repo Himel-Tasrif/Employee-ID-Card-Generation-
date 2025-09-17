@@ -1,5 +1,5 @@
 // src/types/index.ts
-export type Role = '' | 'PCA' | 'HHA' | 'RN';
+export type Role = '' | 'PCA' | 'HHA' | 'RN'| 'Office Coordinator' | 'DPS' | 'Therapist - PT' | 'Therapist - OT' | 'Therapist - RT' | 'Field RN';
 
 export interface UserData {
   name: string;
@@ -11,8 +11,8 @@ export interface UserData {
 }
 
 export const getStaffType = (role: Role) =>
-  role === 'RN'
+  role === 'RN' || role === 'DPS' || role === 'Therapist - PT' || role === 'Therapist - OT' || role === 'Therapist - RT' || role === 'Field RN'
     ? 'MEDICAL STAFF'
-    : role === 'PCA' || role === 'HHA'
+    : role === 'PCA' || role === 'HHA' || role === 'Office Coordinator'
     ? 'NON-MEDICAL STAFF'
     : '';
