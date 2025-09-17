@@ -64,7 +64,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
       />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center px-6 pt-5 pb-6">
+      <div className="relative z-10 flex h-full flex-col items-center px-6 pt-4 pb-5">
         {/* Logo (unchanged) */}
         <div className="w-full flex justify-center mb-4">
           <img
