@@ -7,6 +7,9 @@ interface IDCardProps {
   userData: UserData;
 }
 
+const PURPLE = "#5b21b6"; // same for name + phone
+const DARK_TEXT = "#0f172a";
+
 const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
   // Safe placeholders
   const nameText = userData.name?.trim() ? userData.name : "EMPLOYEE NAME";
@@ -18,14 +21,13 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
       ref={ref}
       className="relative w-[350px] h-[550px] rounded-xl shadow-2xl overflow-hidden border"
       style={{
-        // use only capture-safe CSS (no Tailwind color funcs)
         borderColor: "#e5e7eb",
         fontFamily:
           "Montserrat, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto",
         backgroundColor: "#ffffff",
       }}
     >
-      {/* Soft vertical side lines (inline gradient) */}
+      {/* Soft vertical side lines */}
       <div
         className="absolute left-2 top-0 w-[3px] h-full rounded-full pointer-events-none"
         style={{
@@ -41,49 +43,29 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         }}
       />
 
-      {/* Decorative corner bars — TOP (inline colors) */}
+      {/* Decorative corner bars — TOP */}
       <div className="absolute top-0 left-0 w-16 h-16">
-        <div
-          className="absolute top-0 left-0 w-10 h-1 rounded-r"
-          style={{ backgroundColor: "#6d28d9" /* purple-700 */ }}
-        />
-        <div
-          className="absolute top-0 left-0 w-1 h-10 rounded-b"
-          style={{ backgroundColor: "#6d28d9" }}
-        />
+        <div className="absolute top-0 left-0 w-10 h-1 rounded-r" style={{ backgroundColor: "#6d28d9" }} />
+        <div className="absolute top-0 left-0 w-1 h-10 rounded-b" style={{ backgroundColor: "#6d28d9" }} />
       </div>
       <div className="absolute top-0 right-0 w-16 h-16">
-        <div
-          className="absolute top-0 right-0 w-10 h-1 rounded-l"
-          style={{ backgroundColor: "#6d28d9" }}
-        />
-        <div
-          className="absolute top-0 right-0 w-1 h-10 rounded-b"
-          style={{ backgroundColor: "#6d28d9" }}
-        />
+        <div className="absolute top-0 right-0 w-10 h-1 rounded-l" style={{ backgroundColor: "#6d28d9" }} />
+        <div className="absolute top-0 right-0 w-1 h-10 rounded-b" style={{ backgroundColor: "#6d28d9" }} />
       </div>
 
-      {/* Decorative corner bars — BOTTOM (inline colors) */}
-      <div
-        className="absolute left-0 bottom-0 w-24 h-3 rounded-tr-xl"
-        style={{ backgroundColor: "rgba(88,28,135,0.9)" /* purple-900/90 */ }}
-      />
-      <div
-        className="absolute right-0 bottom-0 w-24 h-3 rounded-tl-xl"
-        style={{ backgroundColor: "rgba(147,51,234,0.9)" /* purple-600/90 */ }}
-      />
+      {/* Decorative corner bars — BOTTOM */}
+      <div className="absolute left-0 bottom-0 w-24 h-3 rounded-tr-xl" style={{ backgroundColor: "rgba(88,28,135,0.9)" }} />
+      <div className="absolute right-0 bottom-0 w-24 h-3 rounded-tl-xl" style={{ backgroundColor: "rgba(147,51,234,0.9)" }} />
 
-      {/* Header stripe (inline gradient) */}
+      {/* Header stripe */}
       <div
         className="absolute top-0 left-0 w-full h-4"
-        style={{
-          background: "linear-gradient(90deg, #6d28d9, #a855f7)", // purple-700 -> purple-500
-        }}
+        style={{ background: "linear-gradient(90deg, #6d28d9, #a855f7)" }}
       />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center px-7 pt-8 pb-7">
-        {/* Logo (plain <img>) */}
+      <div className="relative z-10 flex h-full flex-col items-center px-7 pt-7 pb-7">
+        {/* Logo (unchanged) */}
         <div className="w-full flex justify-center mb-4">
           <img
             src="/image.png"
@@ -94,19 +76,18 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           />
         </div>
 
-        {/* Photo frame */}
+        {/* Larger photo frame (160×160) */}
         <div
-          className="mt-1 mb-6 w-[128px] h-[128px] rounded-xl overflow-hidden border-2 shadow-md grid place-items-center"
+          className="mt-1 mb-6 w-[150px] h-[170px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
           style={{ borderColor: "#e5e7eb", backgroundColor: "#f3f4f6" }}
         >
           {userData.photo ? (
             <img
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
-              width={128}
-              height={128}
+              width={160}
+              height={180}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              crossOrigin="anonymous"
             />
           ) : (
             <span className="text-[12px] tracking-wide" style={{ color: "#6b7280" }}>
@@ -115,64 +96,67 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           )}
         </div>
 
-        {/* Name */}
+        {/* Name (bigger) */}
         <div
           className="text-center font-extrabold tracking-wide uppercase"
-          style={{ color: "#5b21b6", fontSize: 18, lineHeight: "22px" }}
+          style={{ color: PURPLE, fontSize: 23, lineHeight: "24px" }}
         >
           {nameText}
         </div>
 
-        {/* Role */}
+        {/* Role (slightly bigger) */}
         <div
           className="mt-1 text-center font-extrabold uppercase"
-          style={{ color: "#374151", fontSize: 16 }}
+          style={{ color: "#374151", fontSize: 20 }}
         >
           {roleText}
         </div>
 
-        {/* Staff Type */}
+        {/* Staff Type (bigger) */}
         <div
           className="mt-1 text-center font-semibold uppercase"
-          style={{ color: "#6b7280", fontSize: 12 }}
+          style={{ color: "#4b5563", fontSize: 16 }}
         >
           {staffTypeText}
         </div>
 
-        {/* Divider (inline gradient) */}
+        {/* Divider (thicker) */}
         <div
-          className="mt-5 mb-5 h-[3px] w-[92%] rounded"
+          className="mt-5 mb-5 h-[6px] w-[92%] rounded"
           style={{
             background: "linear-gradient(90deg, #8b5cf6, #84cc16, #22c55e, #8b5cf6)",
-            opacity: 0.7,
+            opacity: 0.95,
           }}
         />
 
         {/* Contact block */}
         <div className="text-center leading-relaxed">
+          {/* Address — larger & darker & bold */}
           <div
-            className="text-[11px] font-extrabold uppercase tracking-wide"
-            style={{ color: "#0f172a" }}
+            className="font-extrabold uppercase tracking-wide"
+            style={{ color: DARK_TEXT, fontSize: 15, lineHeight: "19px" }}
           >
             70 EAST SUNRISE HIGHWAY,
           </div>
           <div
-            className="text-[11px] font-extrabold uppercase tracking-wide -mt-0.5"
-            style={{ color: "#0f172a" }}
+            className="font-extrabold uppercase tracking-wide -mt-0.5"
+            style={{ color: DARK_TEXT, fontSize: 15, lineHeight: "19px" }}
           >
             SUITE 500 VALLEY STREAM, NY 11581
           </div>
 
+          {/* Phone — same purple as name */}
           <div
-            className="mt-3 text-[18px] font-extrabold tracking-wide"
-            style={{ color: "#1d4ed8", letterSpacing: "0.5px" }}
+            className="mt-3 font-extrabold tracking-wide"
+            style={{ color: PURPLE, fontSize: 21, letterSpacing: "0.5px" }}
           >
             866-429-9667
           </div>
 
+          {/* Website — slightly bigger */}
           <div
-            className="mt-2 text-[12px] font-semibold lowercase tracking-wide"
-            style={{ color: "#1f2937" }}
+            className="mt-2 font-semibold lowercase tracking-wide"
+            style={{ color: "#1f2937", fontSize: 16 }}
           >
             www.axzonshomecare.com
           </div>
