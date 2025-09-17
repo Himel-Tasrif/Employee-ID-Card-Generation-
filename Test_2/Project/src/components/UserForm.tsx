@@ -160,6 +160,11 @@ export default function UserForm({ userData, setUserData }: UserFormProps) {
           <option value="PCA">PCA - Personal Care Assistant</option>
           <option value="HHA">HHA - Home Health Aide</option>
           <option value="RN">RN - Registered Nurse</option>
+          <option value="Office Coordinator">Office Coordinator</option>
+          <option value="DPS">DPS - Director of Patient Services</option>
+          <option value="Therapist - PT">Therapist - PT (Physical Therapist)</option>
+          <option value="Therapist - OT">Therapist - OT (Occupational Therapist)</option>
+          <option value="Therapist - RT">Therapist - RT (Respiratory Therapist)</option>
         </select>
 
         {/* Conditional staff-type label */}
