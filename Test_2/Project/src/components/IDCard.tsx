@@ -85,8 +85,8 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
             <img
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
-              width={180}
-              height={200}
+              width={160}
+              height={250}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
