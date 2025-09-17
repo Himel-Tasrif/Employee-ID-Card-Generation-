@@ -1,4 +1,3 @@
-// src/types/index.ts
 export type Role = '' | 'PCA' | 'HHA' | 'RN'| 'Office Coordinator' | 'DPS' | 'Therapist - PT' | 'Therapist - OT' | 'Therapist - RT' | 'Field RN';
 
 export interface UserData {
