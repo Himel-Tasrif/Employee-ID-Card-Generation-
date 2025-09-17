@@ -64,7 +64,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
       />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center px-7 pt-7 pb-7">
+      <div className="relative z-10 flex h-full flex-col items-center px-6 pt-5 pb-6">
         {/* Logo (unchanged) */}
         <div className="w-full flex justify-center mb-4">
           <img
@@ -76,9 +76,9 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           />
         </div>
 
-        {/* Larger photo frame (160×160) */}
+        {/* Larger photo frame (160×250) */}
         <div
-          className="mt-1 mb-6 w-[300px] h-[200px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
+          className="mt-1 mb-6 w-[160px] h-[250px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
           style={{ borderColor: "#e5e7eb", backgroundColor: "#f3f4f6" }}
         >
           {userData.photo ? (
@@ -122,7 +122,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
 
         {/* Divider (thicker) */}
         <div
-          className="mt-5 mb-5 h-[6px] w-[92%] rounded"
+          className="mt-5 mb-5 h-[9px] w-[92%] rounded"
           style={{
             background: "linear-gradient(90deg, #8b5cf6, #84cc16, #22c55e, #8b5cf6)",
             opacity: 0.95,
