@@ -82,7 +82,7 @@ export default function IDCardPreview({ userData }: IDCardPreviewProps) {
     <div className="space-y-6">
       {/* Visible scaled preview */}
       <div className="flex justify-center">
-        <div className="transform scale-75 origin-center">
+        <div className="transform scale-80 origin-center">
           <IDCard userData={userData} />
         </div>
       </div>
