@@ -64,7 +64,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
       />
 
       {/* Content */}
-      <div className="relative z-10 flex h-full flex-col items-center px-6 pt-4 pb-5">
+      <div className="relative z-10 flex h-full flex-col items-center px-6 pt-8 pb-5">
         {/* Logo (unchanged) */}
         <div className="w-full flex justify-center mb-4">
           <img
@@ -76,16 +76,16 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
           />
         </div>
 
-        {/* Larger photo frame (165×250) */}
+        {/* Larger photo frame (170×250) */}
         <div
-          className="mt-1 mb-6 w-[165px] h-[250px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
+          className="mt-1 mb-6 w-[170px] h-[250px] rounded-2xl overflow-hidden border-2 shadow-md grid place-items-center"
           style={{ borderColor: "#e5e7eb", backgroundColor: "#f3f4f6" }}
         >
           {userData.photo ? (
             <img
               src={URL.createObjectURL(userData.photo)}
               alt="Staff Photo"
-              width={165}
+              width={170}
               height={250}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -107,7 +107,7 @@ const IDCard = forwardRef<HTMLDivElement, IDCardProps>(({ userData }, ref) => {
         {/* Role (slightly bigger) */}
         <div
           className="mt-1 text-center font-extrabold uppercase"
-          style={{ color: "#374151", fontSize: 20 }}
+          style={{ color: "#374151", fontSize: 19 }}
         >
           {roleText}
         </div>
