@@ -1,3 +1,42 @@
 [
-  
+  {
+    "id": "791888b6-565a-4af0-8996-6a2c188e3507",
+    "name": "Tasrif Nur Himel",
+    "email": "himel35-1078@diu.edu.bd",
+    "username": "himel03",
+    "passwordHash": "$2b$10$0KehFyr.nj38cJUAGjCxUev78y1kMfutjyIyQ6T0xI1TMyLRdxSUa",
+    "createdAt": "2025-09-19T21:38:56.843Z"
+  },
+  {
+    "id": "55351502-b58f-47ff-9a13-cea2135976f5",
+    "name": "Skalra",
+    "email": "skalra@axzonshomecare.com",
+    "username": "skalra01",
+    "passwordHash": "$2b$10$kajGdjQx4eIKtI.VYGsU6.dqwe04zVHsO/iA8haVTRFYH6/RvUgSC",
+    "createdAt": "2025-09-20T16:43:31.425Z"
+  },
+  {
+    "id": "cfa3695a-c4b2-4bbd-b6ed-645fe30e9946",
+    "name": "Mahiry",
+    "email": "mahiry.syeda@axzonshomecare.com",
+    "username": "syeda01",
+    "passwordHash": "$2b$10$SYmyoDbnArr0jtv6XwKlYuelHk7FSZDZoOVK9.Xgn83Ng1DrAhdQa",
+    "createdAt": "2025-09-20T16:46:17.260Z"
+  },
+  {
+    "id": "b68b02b5-2b76-47f9-8f8a-56d27fcff608",
+    "name": "Navin",
+    "email": "navin.bkanhoye@axzonshomecare.com",
+    "username": "navin01",
+    "passwordHash": "$2b$10$P/2cZpZwU/jRj9jfBjhkDeE1NC0sEnn7AQtt2qqSNOeVuBBpbApbe",
+    "createdAt": "2025-09-20T16:47:56.239Z"
+  },
+  {
+    "id": "790eacf7-e677-4210-9989-d9c5f98059f4",
+    "name": "Regge",
+    "email": "regge.lm@axzonshomecare.com",
+    "username": "regge01",
+    "passwordHash": "$2b$10$uzgoGal/BMBz4Torr.4FB.0YmNqZyXJcasf5EFRkc1Q6TVQDx9x8.",
+    "createdAt": "2025-09-20T16:50:00.032Z"
+  }
 ]
